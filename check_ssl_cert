@@ -1129,6 +1129,10 @@ main() {
     if [ -n "${DEBUG}" ] ; then
         echo "[DBG] ROOT_CA = ${ROOT_CA}"
     fi
+    
+    if [ $IGNORE_SSL_LABS_CACHE ] && [ $SSL_LABS_USE_CACHE ] ; then
+        unknown "Cannot set both ignore-ssl-labs-cache and ssl-labs-use-cache"
+    fi
 
     #######################
     # Check needed programs
