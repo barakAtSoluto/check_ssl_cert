@@ -79,6 +79,7 @@ usage() {
     echo "      --ignore-sig-alg        do not check if the certificate was signed with SHA1"
     echo "                              or MD5"
     echo "      --ignore-ssl-labs-cache Forces a new check by SSL Labs (see -L)"
+    echo "      --ssl-labs-use-cache    Use SSL Labs cache"
     echo "   -i,--issuer issuer         pattern to match the issuer of the certificate"
     echo "      --issuer-cert-cache dir directory where to store issuer certificates cache"
     echo "   -K,--clientkey path        use client certificate key to authenticate"
@@ -603,6 +604,10 @@ main() {
                 IGNORE_SSL_LABS_CACHE="&startNew=on"
                 shift
                 ;;
+            --ssl-labs-use-cache)
+                SSL_LABS_USE_CACHE="&maxAge=12&fromCache=true"
+                shift
+                ;;
             --no_ssl2)
                 SSL_VERSION_DISABLED="${SSL_VERSION_DISABLED} -no_ssl2"
                 shift
@@ -1123,6 +1128,10 @@ main() {
 
     if [ -n "${DEBUG}" ] ; then
         echo "[DBG] ROOT_CA = ${ROOT_CA}"
+    fi
+    
+    if [ $IGNORE_SSL_LABS_CACHE ] && [ $SSL_LABS_USE_CACHE ] ; then
+        unknown "Cannot set both ignore-ssl-labs-cache and ssl-labs-use-cache"
     fi
 
     #######################
@@ -1986,21 +1995,21 @@ EOF
         while true; do
 
             if [ -n "${DEBUG}" ] ; then
-                echo "[DBG] executing ${CURL_BIN} --silent \"https://api.ssllabs.com/api/v2/analyze?host=${HOST}${IGNORE_SSL_LABS_CACHE}\""
+                echo "[DBG] executing ${CURL_BIN} --silent \"https://api.ssllabs.com/api/v2/analyze?host=${HOST}${IGNORE_SSL_LABS_CACHE}${SSL_LABS_USE_CACHE}\""
             fi
 	    
 	    if [ -n "${SNI}" ] ; then
-		JSON="$(${CURL_BIN} --silent "https://api.ssllabs.com/api/v2/analyze?host=${SNI}${IGNORE_SSL_LABS_CACHE}")"
+		JSON="$(${CURL_BIN} --silent "https://api.ssllabs.com/api/v2/analyze?host=${SNI}${IGNORE_SSL_LABS_CACHE}${SSL_LABS_USE_CACHE}")"
                 CURL_RETURN_CODE=$?
             else
-                JSON="$(${CURL_BIN} --silent "https://api.ssllabs.com/api/v2/analyze?host=${HOST}${IGNORE_SSL_LABS_CACHE}")"
+                JSON="$(${CURL_BIN} --silent "https://api.ssllabs.com/api/v2/analyze?host=${HOST}${IGNORE_SSL_LABS_CACHE}${SSL_LABS_USE_CACHE}")"
                 CURL_RETURN_CODE=$?
             fi
 
             if [ ${CURL_RETURN_CODE} -ne 0 ] ; then
 
                 if [ -n "${DEBUG}" ] ; then
-                    echo "[DBG] curl returned ${CURL_RETURN_CODE}: ${CURL_BIN} --silent \"https://api.ssllabs.com/api/v2/analyze?host=${HOST}${IGNORE_SSL_LABS_CACHE}\""
+                    echo "[DBG] curl returned ${CURL_RETURN_CODE}: ${CURL_BIN} --silent \"https://api.ssllabs.com/api/v2/analyze?host=${HOST}${IGNORE_SSL_LABS_CACHE}${SSL_LABS_USE_CACHE}\""
                 fi
 
                 unknown "Error checking SSL Labs: curl returned ${CURL_RETURN_CODE}, see 'man curl' for details"
@@ -2010,7 +2019,7 @@ EOF
             JSON="$(printf '%s' "${JSON}" | tr '\n' ' ' )"
 
             if [ -n "${DEBUG}" ] ; then
-                echo "[DBG] Checking SSL Labs: ${CURL_BIN} --silent \"https://api.ssllabs.com/api/v2/analyze?host=${HOST}\""
+                echo "[DBG] Checking SSL Labs: ${CURL_BIN} --silent \"https://api.ssllabs.com/api/v2/analyze?host=${HOST}${SSL_LABS_USE_CACHE}\""
                 echo "[DBG] SSL Labs JSON: ${JSON}"
             fi
 
