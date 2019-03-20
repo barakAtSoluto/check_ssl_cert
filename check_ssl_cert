@@ -2103,6 +2103,10 @@ EOF
                         SSL_LABS_ERROR_MESSAGE="${JSON}"
                     fi
 
+                    if [ ${SSL_LABS_ERROR_MESSAGE} == *"Running at full capacity"* ]; then
+                        unknown "SSL Labs running at full capacity"
+                    fi
+                    
                     critical "Cannot check status on SSL Labs: ${SSL_LABS_ERROR_MESSAGE}"
             esac
 
