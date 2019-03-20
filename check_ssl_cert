@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # check_ssl_cert
 #
@@ -1121,7 +1121,7 @@ main() {
     if [ -n "${SSL_LAB_WARN_ASSESTMENT}" ] ; then
         convert_ssl_lab_grade "${SSL_LAB_WARN_ASSESTMENT}"
         SSL_LAB_WARN_ASSESTMENT_NUMERIC="${NUMERIC_SSL_LAB_GRADE}"
-        if ( $SSL_LAB_WARN_ASSESTMENT_NUMERIC < $SSL_LAB_CRIT_ASSESSMENT_NUMERIC ); then
+        if (( ${SSL_LAB_WARN_ASSESTMENT_NUMERIC} < ${SSL_LAB_CRIT_ASSESSMENT_NUMERIC} )); then
             unknown  "--check-ssl-labs-warn-grade must be greater than -L|--check-ssl-labs"
         fi
     fi
@@ -2103,7 +2103,7 @@ EOF
                         SSL_LABS_ERROR_MESSAGE="${JSON}"
                     fi
 
-                    if [ ${SSL_LABS_ERROR_MESSAGE} == *"Running at full capacity"* ]; then
+                    if [[ ${SSL_LABS_ERROR_MESSAGE} == *"Running at full capacity"* ]]; then
                         unknown "SSL Labs running at full capacity"
                     fi
                     
